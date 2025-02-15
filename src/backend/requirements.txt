@@ -3,3 +3,5 @@ python-dotenv
 elevenlabs
 celery
 redis
+firebase-admin
+openai
