@@ -5,22 +5,9 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from firebase_admin import credentials, initialize_app, storage, firestore
+from .firebase_client import db, bucket  # Use shared Firebase resources
 
 from app.tasks import generate_tts_notification
-
-# --- Firebase Initialization ---
-# Load the environment variable for the service account key path.
-firebase_key_relative = os.getenv("FIREBASE_KEY_PATH")
-base_dir = os.path.dirname(os.path.abspath(__file__))
-firebase_key_path = os.path.join(base_dir, firebase_key_relative)
-
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate(firebase_key_path)
-initialize_app(cred, {
-    'storageBucket': os.getenv("FIREBASE_BUCKET_NAME")  # e.g., "your-project-id.appspot.com"
-})
-db = firestore.client()
-bucket = storage.bucket()
 
 # Create a blueprint for our routes
 main_blueprint = Blueprint('main', __name__)
