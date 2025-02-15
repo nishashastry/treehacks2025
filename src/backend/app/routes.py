@@ -6,6 +6,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from firebase_admin import credentials, initialize_app, storage, firestore
 from .firebase_client import db, bucket  # Use shared Firebase resources
+from .transcription import transcription, action_items
 
 from app.tasks import generate_tts_notification
 
@@ -65,11 +66,13 @@ def record_consultation():
     """
     Endpoint to save a consultation:
       - Expects a file upload for the audio (field name: 'audio')
-      - Expects metadata in form-data: 
-          * patient_id (unique identifier for the patient)
-          * consultation_time (e.g., "2025-02-14 15:30")
+      - Expects metadata (form-data):
+            * patient_id (unique patient identifier)
+            * consultation_time (e.g., "2025-02-14 15:30")
+
+      After saving the audio file, it will be transcribed and analyzed for action items.
     """
-    # We now require only the patient_id and consultation_time in addition to the file.
+    # Retrieve required fields from the form data.
     patient_id = request.form.get('patient_id')
     consultation_time = request.form.get('consultation_time')  # e.g., "2025-02-14 15:30"
 
@@ -83,12 +86,11 @@ def record_consultation():
         return jsonify({"error": "Patient not found."}), 404
 
     patient_data = patient_doc.to_dict()
-    # Expect patient_data to have at least: name, age, and gender.
     patient_name = patient_data.get("name")
     patient_age = patient_data.get("age")
     patient_gender = patient_data.get("gender")
 
-    # Validate and secure the audio file
+    # Validate and secure the audio file.
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided."}), 400
 
@@ -100,20 +102,32 @@ def record_consultation():
     os.makedirs("temp", exist_ok=True)
     audio_file.save(local_path)
 
-    # Upload the file to Firebase Storage using the unique filename
+    # Upload the file to Firebase Storage using the unique filename.
     blob = bucket.blob(f"consultations/{unique_filename}")
     blob.upload_from_filename(local_path)
     audio_url = blob.public_url
 
+    # --- Speech-to-Text and Action Items ---
+    try:
+        transcript_text = transcription(local_path)
+        actions = action_items(transcript_text)
+    except Exception as e:
+        transcript_text = ""
+        actions = ""
+        # Optionally, log the error for debugging.
+        print(f"Error during transcription: {e}")
+
+    # Remove the local temporary file.
     os.remove(local_path)
 
+    # Convert consultation_time to a readable string.
     try:
         dt = datetime.strptime(consultation_time, "%Y-%m-%d %H:%M")
         consultation_time_str = dt.strftime("%A, %B %d, %Y at %I:%M %p")
     except Exception:
         consultation_time_str = consultation_time
 
-    # Save the consultation metadata in Firestore.
+    # Save consultation metadata to Firestore, including transcript and action items.
     consultation_data = {
         "patient_id": patient_id,
         "patient_name": patient_name,
@@ -121,10 +135,17 @@ def record_consultation():
         "patient_gender": patient_gender,
         "consultation_time": consultation_time_str,
         "audio_url": audio_url,
+        "transcript": transcript_text,
+        "action_items": actions,
         "created_at": datetime.utcnow(),
-        "status": "recorded"
+        "status": "recorded"  # You might update this later after further processing.
     }
 
     db.collection("consultations").add(consultation_data)
 
-    return jsonify({"message": "Consultation saved.", "audio_url": audio_url}), 201
+    return jsonify({
+        "message": "Consultation saved.",
+        "audio_url": audio_url,
+        "transcript": transcript_text,
+        "action_items": actions
+    }), 201
