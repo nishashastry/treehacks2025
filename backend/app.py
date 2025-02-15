@@ -7,14 +7,10 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from textblob import TextBlob
 from flask_sqlalchemy import SQLAlchemy
-
-load_dotenv()  # Load variables from .env
-
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-PORT = int(os.getenv("PORT", 5000))  # Default port 5000 if not set
+from openai import OpenAI 
 
 app = Flask(__name__)
+app.secret_key = "treehackyhacks"
 CORS(app)
 
 # Configure the SQLAlchemy database URI
@@ -22,6 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diabetes.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -144,64 +141,70 @@ def adjust_response_for_sentiment(response, sentiment_score):
 def home():
     return "This is your chronic disease management buddy!"
 
-# Chatbot for Answering FAQs (Perplexity)
-@app.route("/chat", methods=["GET","POST"])
+
+@app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    user_input = data.get("message")
+    client = OpenAI(api_key="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", base_url="https://api.perplexity.ai")
+    try:
+        # Retrieve user registration info stored during login/registration
+        user_info = session.get("user_info", {
+            "full_name": "Patient",
+            "gender": "N/A",
+            "diabetes_type": "N/A",
+            "years_since_diagnosis": "N/A"
+        })
 
-    # Retrieve chat history from session
-    if "chat_history" not in session:
-        session["chat_history"] = []
-    chat_history = session["chat_history"]
-    chat_history.append(user_input)
+        data = request.json
+        user_input = data.get("message", "")
 
-    # Retrieve user registration info stored during login/registration
-    user_info = session.get("user_info", {
-        "full_name": "Patient",
-        "gender": "N/A",
-        "diabetes_type": "N/A",
-        "years_since_diagnosis": "N/A"
-    })
+        if "chat_history" not in session:
+            session["chat_history"] = []
 
-    # Build a personalized context string from registration info
-    personalized_context = (
-        f"Patient Name: {user_info.get('full_name')}. "
-        f"Gender: {user_info.get('gender')}. "
-        f"Diabetes Type: {user_info.get('diabetes_type')}. "
-        f"Years Since Diagnosis: {user_info.get('years_since_diagnosis')}."
-    )
 
-    # Construct the full context for the AI assistant
-    diabetes_context = (
-        "You are an AI assistant for diabetes management. "
-        "Provide personalized, empathetic, and medically accurate advice. "
-        "Patient context: " + personalized_context +
-        " Consider past messages and any doctor visit notes when responding. "
-        "The patient may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being."
-    )
+        chat_history = session["chat_history"]
+        chat_history.append({"role": "user", "content": user_input})
 
-    # Include recent chat history for continuity
-    context = " ".join(chat_history[-5:])
+        # Construct the personalized context
+        personalized_context = (
+            f"Patient Name: {user_info.get('full_name')}. "
+            f"Gender: {user_info.get('gender')}. "
+            f"Diabetes Type: {user_info.get('diabetes_type')}. "
+            f"Years Since Diagnosis: {user_info.get('years_since_diagnosis')}."
+        )
 
-    response = requests.get(
-        "https://api.perplexity.ai/sonar/search",
-        headers={"Authorization": f"Bearer {PERPLEXITY_API_KEY}"},
-        params={"query": f"{diabetes_context} Previous chat: {context}. User: {user_input}"}
-    )
+        messages = [
+            {"role": "system", "content": ("You are an AI assistant for diabetes management."
+                                           "Provide personalized, empathetic, and medically accurate advice."
+                                           "Consider past messages and any doctor visit notes when responding."
+                                           "The patient may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being."
+                                           f"Patient context: {personalized_context} "
+                                           "Do not make up things or say anything that is not backed by evidence"
+                                           "You are an assistant, not a doctor.")},
+        ] + chat_history[-5:]
 
-    chatbot_reply = response.json().get("answer", 
-        "I understand you need clear answers. While I am here to help, please consult a medical professional for specific advice.")
+        response = client.chat.completions.create(
+            model="sonar-pro",
+            messages=messages
+        )
 
-    session["chat_history"].append(chatbot_reply)
-    return jsonify({"response": chatbot_reply})
+        chatbot_reply = response.choices[0].message.content if response.choices else "Sorry, I couldn't process that request."
+        processed_reply = refine_response(chatbot_reply)
+        
+        chat_history.append({"role": "assistant", "content": processed_reply})
+        session["chat_history"] = chat_history  # Update session
+
+        return jsonify({"response": processed_reply})
+
+    except Exception as e:
+        return jsonify({"error": f"API request failed: {str(e)}"}), 500
     
-    
+
 def refine_response(raw_response):
+    """Filter unsafe responses"""
     if any(word in raw_response.lower() for word in ["cure", "miracle", "unproven", "unsafe"]):
         return "Please consult a licensed healthcare provider for medical guidance."
-    
     return raw_response
-    
+
+
 if __name__ == "__main__":
     app.run(debug=True)
