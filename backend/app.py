@@ -149,25 +149,40 @@ def home():
 def chat():
     data = request.json
     user_input = data.get("message")
+
     # Retrieve chat history from session
     if "chat_history" not in session:
         session["chat_history"] = []
-    
     chat_history = session["chat_history"]
     chat_history.append(user_input)
-    
-    # Keep the last 5 messages for context
-    context = " ".join(chat_history[-5:])
 
-    # Enhance query with diabetes-specific context
-    diabetes_context = (
-        "You are an AI assistant for diabetes management"
-        "Consider past messages when responding"
-        "Provide answers suitable for a patient with diabetes. "
-        "Ensure medical accuracy and offer empathetic responses. "
-        "The user may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being. "
-        "If necessary, suggest seeking medical consultation."
+    # Retrieve user registration info stored during login/registration
+    user_info = session.get("user_info", {
+        "full_name": "Patient",
+        "gender": "N/A",
+        "diabetes_type": "N/A",
+        "years_since_diagnosis": "N/A"
+    })
+
+    # Build a personalized context string from registration info
+    personalized_context = (
+        f"Patient Name: {user_info.get('full_name')}. "
+        f"Gender: {user_info.get('gender')}. "
+        f"Diabetes Type: {user_info.get('diabetes_type')}. "
+        f"Years Since Diagnosis: {user_info.get('years_since_diagnosis')}."
     )
+
+    # Construct the full context for the AI assistant
+    diabetes_context = (
+        "You are an AI assistant for diabetes management. "
+        "Provide personalized, empathetic, and medically accurate advice. "
+        "Patient context: " + personalized_context +
+        " Consider past messages and any doctor visit notes when responding. "
+        "The patient may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being."
+    )
+
+    # Include recent chat history for continuity
+    context = " ".join(chat_history[-5:])
 
     response = requests.get(
         "https://api.perplexity.ai/sonar/search",
@@ -175,11 +190,12 @@ def chat():
         params={"query": f"{diabetes_context} Previous chat: {context}. User: {user_input}"}
     )
 
-    chatbot_reply = response.json().get("answer", "I understand you need coorect and clear answers. While I am here for you, I couldn't find an answer to this particularquery. Please consult a medical professional.")
-   
-    session["chat_history"].append(chatbot_reply)
+    chatbot_reply = response.json().get("answer", 
+        "I understand you need clear answers. While I am here to help, please consult a medical professional for specific advice.")
 
+    session["chat_history"].append(chatbot_reply)
     return jsonify({"response": chatbot_reply})
+    
     
 def refine_response(raw_response):
     if any(word in raw_response.lower() for word in ["cure", "miracle", "unproven", "unsafe"]):
