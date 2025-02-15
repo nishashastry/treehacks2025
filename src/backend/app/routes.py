@@ -115,6 +115,7 @@ def record_consultation():
         transcript_text = ""
         actions = ""
         # Optionally, log the error for debugging.
+        print(f"Error during transcription: {e}")
 
     # Remove the local temporary file.
     os.remove(local_path)
