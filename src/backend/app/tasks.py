@@ -32,15 +32,15 @@ def generate_tts_notification(text):
 
     # Define the file path where the audio file will be saved.
     audio_path = os.path.join("app", "static", "audio", "notification.mp3")
-    
+
     # Ensure the directory exists; if not, create it.
     os.makedirs(os.path.dirname(audio_path), exist_ok=True)
-    
+
     # Open the file in binary write mode.
     with open(audio_path, "wb") as f:
         # Since 'audio' is a generator, write each chunk to the file.
         for chunk in audio:
             f.write(chunk)
-    
+
     # Return a status message and the path to the saved audio file.
     return {"status": "complete", "audio_file": audio_path}
