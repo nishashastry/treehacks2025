@@ -1,8 +1,8 @@
+"use client";
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
-"use client"; // Ensure this is at the very top
-
 import { useState, useEffect } from "react";
+
 // Function to generate random diagnoses
 const generateDiagnoses = () => {
   const diagnoses = [
@@ -39,24 +39,6 @@ export default function Dashboard() {
     }, 5000); // Show after 5 seconds
 
     return () => clearTimeout(timer);
-    // const sendData = async () => {
-    //   const response = await fetch('/predict_glucose', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       firebase_token: "12345",  // Optional, if you want to send notifications
-    //     }),
-    //   });
-  
-    //   // Create an audio element to play the response
-    //   const audio = new Audio();
-    //   audio.src = URL.createObjectURL(await response.blob());
-    //   audio.play();
-    // };
-  
-    sendData();
   }, []);
 
   return (
@@ -64,8 +46,8 @@ export default function Dashboard() {
       <div className="dashboard-page">
         <div className="dashboard-container">
           <h1 className="page-title">Health Dashboard</h1>
-          <div className="dashboard-content">
-            <div className="dashboard-box">
+          <div className="dashboard-content" style={{ display: 'flex', gap: '20px' }}>
+            <div className="dashboard-box" style={{ flex: 1 }}>
               <h2 className="section-title">Recent Diagnoses</h2>
               <ul>
                 {diagnoses.map((item, index) => (
@@ -77,7 +59,7 @@ export default function Dashboard() {
                 ))}
               </ul>
             </div>
-            <div className="dashboard-box">
+            <div className="dashboard-box" style={{ flex: 1 }}>
               <h2 className="section-title">Upcoming Medications</h2>
               <ul>
                 {medications.map((med, index) => (
