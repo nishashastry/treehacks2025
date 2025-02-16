@@ -25,6 +25,7 @@ const SUGGESTED_QUESTIONS = {
 export default function ClinicalNotes() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [actionItems, setActionItems] = useState([]);
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
   useEffect(() => {
@@ -85,7 +86,8 @@ export default function ClinicalNotes() {
 
         // Use the transcription and action items returned from the backend
         setTranscript(responseData.transcription);
-        setSuggestedQuestions(responseData.action_items);
+        setActionItems(responseData.action_items);
+        setSuggestedQuestions(responseData.suggestedQuestions);
       } catch (error) {
         console.error('Error sending the file:', error);
         alert('Failed to upload the file.');
@@ -119,8 +121,13 @@ export default function ClinicalNotes() {
 
         <div className="content-container">
           <div className="messages">
-            <h2 className="section-title">Live Transcript</h2>
+            <h2 className="section-title">Live Transcript and Action Items</h2>
             <div>{transcript || 'Start recording to generate transcript'}</div>
+            {actionItems.map((actionItem, index) => (
+              <div key={index} className="question-box">
+                {actionItem}
+              </div>
+            ))}
           </div>
 
           <div className="suggested-questions">
