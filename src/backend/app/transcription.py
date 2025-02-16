@@ -26,15 +26,11 @@ def handle_transcription():
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
-    # file = request.data
-    # file_path = 'uploaded_file.mp3'
-    # with open(file_path, 'wb') as f:
-    #     f.write(file)
 
     if file:
         # Save the file temporarily
         filename = secure_filename(file.filename)
-        file_path = os.path.join('uploads', filename)  # Ensure you have a 'uploads' directory
+        file_path = os.path.join('/mnt/d/projects/TreeHacks/treehacks2025/src/backend/uploads', filename)  # Ensure you have a 'uploads' directory
         file.save(file_path)
 
         try:
@@ -46,7 +42,7 @@ def handle_transcription():
 
             # Generate suggested questions
             text = f"{transcript}\n\nAfter this conversation, the doctor recommended the following action items:\n" + "\n".join(action_items_list)
-            suggested_questions_list = suggested_questions(text)
+            suggested_questions_list = suggested_questions(action_items_list)
 
             # Clean up the saved file after processing (optional)
             os.remove(file_path)
@@ -119,7 +115,7 @@ def suggested_questions(transcript):
         model="gpt-4o",
         messages=[
             {"role": "developer", "content": prompt},
-            {"role": "user", "content": "Suggested questions " + str(transcript)}
+            {"role": "user", "content": "Suggested questions: " + str(transcript)}
         ]
     )
     return completion.choices[0].message.content
