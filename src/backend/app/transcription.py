@@ -30,7 +30,7 @@ def handle_transcription():
     if file:
         # Save the file temporarily
         filename = secure_filename(file.filename)
-        file_path = os.path.join('/mnt/d/projects/TreeHacks/treehacks2025/src/backend/uploads', filename)  # Ensure you have a 'uploads' directory
+        file_path = os.path.join('C:\Users\jeewonj\cs\treehacks-2025\treehacks2025\src\backend\uploads', filename) 
         file.save(file_path)
 
         try:
@@ -41,7 +41,6 @@ def handle_transcription():
             action_items_list = action_items(transcript)
 
             # Generate suggested questions
-            text = f"{transcript}\n\nAfter this conversation, the doctor recommended the following action items:\n" + "\n".join(action_items_list)
             suggested_questions_list = suggested_questions(action_items_list)
 
             # Clean up the saved file after processing (optional)
@@ -106,8 +105,7 @@ def suggested_questions(transcript):
     :return: Four follow-up questions that patient can ask
     """
     prompt = (
-        "You are going to get an audio transcript of a doctor's visit for diabetes followed by the action items recommended by the doctor. "
-        "In the audio transcript, there is audio of both the doctor and patient. "
+        "You are going to get a summary of an audio transcript of a doctor's visit for diabetes followed by the action items recommended by the doctor. "
         "You are basically a medically educated scribe assistant to help the patient understand their situation. "
         "The patient wants a four follow up questions given the conversation and the action items to get a better understanding of what they need to do."
     )
@@ -115,7 +113,7 @@ def suggested_questions(transcript):
         model="gpt-4o",
         messages=[
             {"role": "developer", "content": prompt},
-            {"role": "user", "content": "Suggested questions: " + str(transcript)}
+            {"role": "user", "content": "Suggested questions " + str(transcript)}
         ]
     )
     return completion.choices[0].message.content

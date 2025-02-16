@@ -24,7 +24,7 @@ const SUGGESTED_QUESTIONS = {
 
 export default function ClinicalNotes() {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [summary, setSummary] = useState('');
   const [actionItems, setActionItems] = useState([]);
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
@@ -84,9 +84,11 @@ export default function ClinicalNotes() {
         const responseData = await response.json();
         console.log('Transcription and action items:', responseData);
 
+        const { summary, formattedActionItems } = formatActionItems(responseData.action_items);
+
         // Use the transcription and action items returned from the backend
-        setTranscript(responseData.transcription);
-        setActionItems(responseData.action_items);
+        setSummary(summary);
+        setActionItems(formattedActionItems);
         setSuggestedQuestions(responseData.suggestedQuestions);
       } catch (error) {
         console.error('Error sending the file:', error);
@@ -95,6 +97,15 @@ export default function ClinicalNotes() {
     } else {
       alert('Please upload a valid audio file.');
     }
+  };
+
+  const formatActionItems = (actionItems) => {
+    // Split the input into Summary and Action Items sections
+    const sections = actionItems.split("*** Action Items ***");
+    const summary = sections[0]?.trim();
+    summary = summary.replace("***Summary***", "").trim(); 
+    const actionItemsList = sections[1]?.trim();
+    return { summary, actionItemsList };
   };
 
   return (
@@ -110,20 +121,29 @@ export default function ClinicalNotes() {
 
           <label className="record-btn">
             Upload Audio File
-            <input 
-              type="file" 
-              accept="audio/*"  // Accept all audio types (you can also specify formats like 'audio/mp3' if preferred)
-              onChange={handleFileUpload} 
-              style={{ display: 'none' }} 
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
             />
           </label>
         </div>
 
         <div className="content-container">
           <div className="messages">
-            <h2 className="section-title">Live Transcript and Action Items</h2>
+            <h2 className="section-title">Live Transcript</h2>
             <div>{transcript || 'Start recording to generate transcript'}</div>
-            <div>{actionItems}</div>
+          </div>
+
+          <div className="messages">
+            <h2 className="section-title">Summary</h2>
+            <div>{summary || 'Summary of conversation'}</div>
+          </div>
+
+          <div className="messages">
+            <h2 className="section-title">Action Items</h2>
+            <div>{actionItems || 'Action items assigned by doctor'}</div>
           </div>
 
           <div className="suggested-questions">
