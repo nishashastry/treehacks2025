@@ -5,9 +5,11 @@ from .firebase_client import db, bucket
 from .routes import main_blueprint
 from .patients import patients_blueprint
 from .chatbot import chatbot_blueprint  # New chatbot endpoints
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(Config)
 
     # Optionally store Firebase references in the app config.

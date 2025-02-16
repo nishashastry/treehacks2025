@@ -35,7 +35,6 @@ export default function SignUp() {
         chronic_disease: chronicDisease,         // Chronic disease (only "Diabetes" allowed)
         years_since_diagnosed: yearsSinceDiagnosed || 0,  // Default to 0 if not provided
         gender: gender || 'Not Specified',   // Default gender if not provided
-        diabetes_type: diabetesType || 'Not Provided', // Default diabetes type if not provided
       };
 
       // Send POST request to the backend

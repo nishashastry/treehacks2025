@@ -3,6 +3,7 @@ import os
 from flask import Blueprint, request, jsonify, session
 from openai import OpenAI
 from flask_cors import CORS
+from .firebase_client import db  # if needed for user info, etc.
 
 chatbot_blueprint = Blueprint('chatbot', __name__)
 # Optionally, apply CORS to this blueprint if needed.
@@ -14,61 +15,50 @@ client = OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai"
 @chatbot_blueprint.route("/chat", methods=["POST"])
 def chat():
     """
-    Chat endpoint that uses Perplexity to generate chatbot responses.
+    Chat endpoint that uses a session-stored conversation history as short-term memory.
     Expects a JSON payload with:
-      - message: the user’s message.
+      - message: the user's message.
 
-    Uses session to store recent chat history and constructs a personalized context.
+    The endpoint appends the new message to the session-based chat history, sends the last several messages as context,
+    and returns the chatbot's response.
     """
+    data = request.get_json()
+    user_input = data.get("message", "").strip()
+    if not user_input:
+        return jsonify({"error": "No message provided."}), 400
+
+    # Initialize chat history in session if it doesn't exist.
+    if "chat_history" not in session:
+        session["chat_history"] = []
+
+    chat_history = session["chat_history"]
+
+    # Append the new user message to chat history.
+    chat_history.append({"role": "user", "content": user_input})
+
+    # Build the conversation context.
+    # Optionally, you could include a system prompt for general instructions.
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an AI assistant for general health consultation. Provide personalized, empathetic, "
+                "and evidence-based advice. Use the conversation context provided to inform your responses."
+            )
+        }
+    ] + chat_history[-10:]  # Use the last 10 messages as context.
+
     try:
-        # For simplicity, assume patient info is stored in the session after login.
-        # In production, you’d extract it from a token or database.
-        user_info = session.get("user_info", {
-            "full_name": "Patient",
-            "gender": "N/A",
-            "diabetes_type": "N/A",
-            "years_since_diagnosis": "N/A"
-        })
-
-        data = request.get_json()
-        user_input = data.get("message", "")
-
-        if "chat_history" not in session:
-            session["chat_history"] = []
-        chat_history = session["chat_history"]
-        chat_history.append({"role": "user", "content": user_input})
-
-        # Construct personalized context from user_info.
-        personalized_context = (
-            f"Patient Name: {user_info.get('full_name')}. "
-            f"Gender: {user_info.get('gender')}. "
-            f"Diabetes Type: {user_info.get('diabetes_type')}. "
-            f"Years Since Diagnosis: {user_info.get('years_since_diagnosis')}."
-        )
-
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are an AI assistant for diabetes management. Provide personalized, empathetic, "
-                    "and medically accurate advice. Consider past messages and any doctor visit notes when responding. "
-                    "The patient may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being. "
-                    f"Patient context: {personalized_context} "
-                    "Do not fabricate information and remain evidence-based."
-                )
-            }
-        ] + chat_history[-5:]
-
         response = client.chat.completions.create(
-            model="sonar-pro",  # Adjust model name if needed.
+            model="sonar-pro",  # Replace with the appropriate model name if needed.
             messages=messages
         )
-
         chatbot_reply = response.choices[0].message.content if response.choices else "I'm sorry, I couldn't process that."
-        # Optionally, adjust the reply based on sentiment or safety filters.
-        chat_history.append({"role": "assistant", "content": chatbot_reply})
-        session["chat_history"] = chat_history  # Update session history.
-
-        return jsonify({"response": chatbot_reply})
     except Exception as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
+
+    # Append the chatbot's response to the conversation history.
+    chat_history.append({"role": "assistant", "content": chatbot_reply})
+    session["chat_history"] = chat_history
+
+    return jsonify({"response": chatbot_reply})

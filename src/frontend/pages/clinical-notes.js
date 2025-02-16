@@ -60,7 +60,7 @@ export default function ClinicalNotes() {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('audio')) {
+    if (file) {
       console.log('Uploaded file:', file.name);
 
       // Create a new FormData object to send the file as multipart/form-data

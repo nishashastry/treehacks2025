@@ -20,7 +20,6 @@ def register_patient():
       - chronic_disease: For this app, must be "Diabetes".
     Optional fields:
       - gender: Defaults to "Not Specified" if missing.
-      - diabetes_type: Defaults to "Not Provided" if missing.
       - years_since_diagnosis: Defaults to 0 if missing or invalid.
     """
     data = request.get_json()
@@ -53,7 +52,6 @@ def register_patient():
 
     # Set optional fields with defaults.
     gender = data.get("gender", "Not Specified")
-    diabetes_type = data.get("diabetes_type", "Not Provided")
     try:
         years_since_diagnosis = int(data.get("years_since_diagnosis", 0))
     except ValueError:
@@ -68,7 +66,6 @@ def register_patient():
         "dob": data["dob"],
         "gender": gender,
         "chronic_disease": data["chronic_disease"],
-        "diabetes_type": diabetes_type,
         "years_since_diagnosis": years_since_diagnosis,
         "created_at": datetime.utcnow().isoformat()
     }
