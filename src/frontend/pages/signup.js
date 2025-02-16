@@ -38,7 +38,7 @@ export default function SignUp() {
       };
 
       // Send POST request to the backend
-      const response = await fetch('http://localhost:5000/patients', {
+      const response = await fetch('http://localhost:5000/patients/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
