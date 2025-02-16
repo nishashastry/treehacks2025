@@ -91,8 +91,8 @@ export default function Dashboard() {
        {showPopup && (
         <div className="popup-overlay">
           <div className="popup">
-            <h2>Welcome to your Health Dashboard</h2>
-            <p>Stay updated with your latest diagnoses and medication schedule.</p>
+            <h2>High glucose alert!</h2>
+            <p>Consider insulin intake or consulting a doctor.</p>
             <button onClick={() => setShowPopup(false)}>Close</button>
           </div>
         </div>
