@@ -27,16 +27,18 @@ export default function SignUp() {
     try {
       // Prepare data to send to the backend
       const userData = {
-        name,
-        email,
-        password,
-        dob,
-        chronic_disease: chronicDisease,
-        years_since_diagnosed: yearsSinceDiagnosed,
+        name: name,                          // Full name of the patient
+        email: email,                        // Patient's email
+        password: password,                  // Plain-text password
+        dob: dob,                             // Date of birth in "YYYY-MM-DD" format
+        chronic_disease: chronicDisease,         // Chronic disease (only "Diabetes" allowed)
+        years_since_diagnosed: yearsSinceDiagnosed || 0,  // Default to 0 if not provided
+        gender: gender || 'Not Specified',   // Default gender if not provided
+        diabetes_type: diabetesType || 'Not Provided', // Default diabetes type if not provided
       };
 
       // Send POST request to the backend
-      const response = await fetch('/api/patients', {
+      const response = await fetch('http://localhost:5000/patients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +55,7 @@ export default function SignUp() {
       // On success, redirect to the profile input page
       localStorage.setItem('email', email);
       localStorage.setItem('chronicDisease', chronicDisease);
-      router.push('/profile-input');
+      router.push('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
