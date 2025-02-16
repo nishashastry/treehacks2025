@@ -161,14 +161,14 @@ def predict_glucose():
     token.
     """
     data = request.get_json()
-    readings = data.get('readings', [])
+    # readings = data.get('readings', [])
     firebase_token = data.get("firebase_token") # For Push Notification
 
-    if not readings:
-        return jsonify({"error": "No glucose readings provided."}), 400
+    # if not readings:
+    #     return jsonify({"error": "No glucose readings provided."}), 400
 
     predictor = GlucosePredictor()
-    prediction = predictor.predict_next_2h(readings)
+    prediction = predictor.predict_next_2h()
     action = predictor.generate_action_suggestion(prediction)
 
     def generate_audio():

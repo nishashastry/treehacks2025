@@ -17,7 +17,7 @@ class GlucosePredictor:
         self.model = load_model(self.model_path)  # Load the LSTM model
         self.test = pd.read_csv("all_test_data.csv")
 
-    def predict_next_2h(self, input_data):
+    def predict_next_2h(self):
         """
         Predicts glucose levels 2 hours ahead based on input data.
 
