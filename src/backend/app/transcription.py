@@ -26,6 +26,10 @@ def handle_transcription():
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
+    # file = request.data
+    # file_path = 'uploaded_file.mp3'
+    # with open(file_path, 'wb') as f:
+    #     f.write(file)
 
     if file:
         # Save the file temporarily
