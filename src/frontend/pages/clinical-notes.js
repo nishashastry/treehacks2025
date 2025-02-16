@@ -73,13 +73,6 @@ export default function ClinicalNotes() {
           method: 'POST',
           body: formData,
         });
-        // const response = await fetch('http://localhost:5000/transcription', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'audio/mp3',
-        //   },
-        //   body: file,  // Directly sending the file as the request body
-        // });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -130,20 +123,12 @@ export default function ClinicalNotes() {
           <div className="messages">
             <h2 className="section-title">Live Transcript and Action Items</h2>
             <div>{transcript || 'Start recording to generate transcript'}</div>
-            {actionItems.map((actionItem, index) => (
-              <div key={index} className="question-box">
-                {actionItem}
-              </div>
-            ))}
+            <div>{actionItems}</div>
           </div>
 
           <div className="suggested-questions">
             <h2 className="section-title">Suggested Questions</h2>
-            {suggestedQuestions.map((question, index) => (
-              <div key={index} className="question-box">
-                {question}
-              </div>
-            ))}
+            <div>{suggestedQuestions}</div>
           </div>
         </div>
       </div>
