@@ -21,8 +21,6 @@ def chat():
     Uses session to store recent chat history and constructs a personalized context.
     """
     try:
-        # For simplicity, assume patient info is stored in the session after login.
-        # In production, you’d extract it from a token or database.
         user_info = session.get("user_info", {
             "full_name": "Patient",
             "gender": "N/A",
@@ -60,12 +58,11 @@ def chat():
         ] + chat_history[-5:]
 
         response = client.chat.completions.create(
-            model="sonar-pro",  # Adjust model name if needed.
+            model="sonar-pro",  # Using Sonar Pro model for its advances reasoning abilities
             messages=messages
         )
 
-        chatbot_reply = response.choices[0].message.content if response.choices else "I'm sorry, I couldn't process that."
-        # Optionally, adjust the reply based on sentiment or safety filters.
+        chatbot_reply = response.choices[0].message.content if response.choices else "I am sorry, I understand you need clear answers but I am currently unable to process that. You should seek professional medical advice."
         chat_history.append({"role": "assistant", "content": chatbot_reply})
         session["chat_history"] = chat_history  # Update session history.
 
