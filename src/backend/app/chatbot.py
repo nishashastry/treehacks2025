@@ -29,38 +29,41 @@ def chat():
             "years_since_diagnosis": "N/A"
         })
 
-        data = request.get_json()
-        user_input = data.get("message", "")
-
-        if "chat_history" not in session:
-            session["chat_history"] = []
-        chat_history = session["chat_history"]
-        chat_history.append({"role": "user", "content": user_input})
-
         # Construct personalized context from user_info.
         personalized_context = (
             f"Patient Name: {user_info.get('full_name')}. "
             f"Gender: {user_info.get('gender')}. "
-            f"Diabetes Type: {user_info.get('diabetes_type')}. "
-            f"Years Since Diagnosis: {user_info.get('years_since_diagnosis')}."
         )
 
-        messages = [
+        data = request.get_json()
+        user_input = data.get("message", "")
+
+        if "chat_history" not in session:
+            session["chat_history"] = [
             {
                 "role": "system",
                 "content": (
-                    "You are an AI assistant for diabetes management. Provide personalized, empathetic, "
+                    "You are an AI assistant for Health Management. Provide personalized, empathetic, "
                     "and medically accurate advice. Consider past messages and any doctor visit notes when responding. "
                     "The patient may ask about blood sugar levels, insulin, diet, exercise, and emotional well-being. "
-                    f"Patient context: {personalized_context} "
                     "Do not fabricate information and remain evidence-based."
+                    "You will be provided with audio transcripts of previous consultations of the patient alone or with the doctor."
+                    "Use available information to provide the best possible advice."
+                    "Try to be concise and clear in your responses."
+                    "DO NOT GIVE UNSOLICITED ADVICE. Your main task is to retrieve information from the patient and provide advice based on that."
                 )
             }
-        ] + chat_history[-5:]
+        ]
+
+        chat_history = session["chat_history"]
+        chat_history.append({"role": "user", "content": user_input})
 
         response = client.chat.completions.create(
             model="sonar-pro",  # Adjust model name if needed.
-            messages=messages
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in chat_history
+            ]
         )
 
         chatbot_reply = response.choices[0].message.content if response.choices else "I'm sorry, I couldn't process that."

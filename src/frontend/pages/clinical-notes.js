@@ -71,6 +71,7 @@ export default function ClinicalNotes() {
         // Send the file to the backend using a POST request
         const response = await fetch('http://localhost:5000/transcription', {
           method: 'POST',
+          credentials: 'include',
           body: formData,
         });
 
@@ -84,12 +85,12 @@ export default function ClinicalNotes() {
         const responseData = await response.json();
         console.log('Transcription and action items:', responseData);
 
-        const { summary, formattedActionItems } = formatActionItems(responseData.action_items);
+        // const { summary, formattedActionItems } = formatActionItems(responseData.action_items);
 
         // Use the transcription and action items returned from the backend
-        setSummary(summary);
-        setActionItems(formattedActionItems);
-        setSuggestedQuestions(responseData.suggestedQuestions);
+        setSummary(responseData.summary);
+        setActionItems(responseData.action_items_list);
+        setSuggestedQuestions(responseData.suggested_questions);
       } catch (error) {
         console.error('Error sending the file:', error);
         alert('Failed to upload the file.');
@@ -145,7 +146,7 @@ export default function ClinicalNotes() {
 
             <div className="column">
               <h2 className="section-title">Suggested Questions</h2>
-              <div>{suggestedQuestions.length > 0 ? suggestedQuestions.join('\n') : suggestedQuestions}</div>
+              <div>{suggestedQuestions}</div>
             </div>
           </div>
         </div>

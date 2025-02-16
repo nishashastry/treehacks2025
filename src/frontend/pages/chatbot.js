@@ -20,6 +20,7 @@ function Chatbot() {
         const response = await fetch('http://localhost:5000/chat', { // Flask backend URL
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ message: newMessage }),
         });
 

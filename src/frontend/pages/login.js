@@ -12,7 +12,7 @@ export default function Login() {
     e.preventDefault();
     try {
       // Send login request to the backend
-      const response = await fetch('/api/patients/login', {
+      const response = await fetch('http://localhost:5000/patients/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
