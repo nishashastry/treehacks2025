@@ -10,6 +10,7 @@ from .transcription import transcription_blueprint
 
 def create_app():
     app = Flask(__name__)
+    # Update CORS to support credentials (cookies)
     CORS(app, supports_credentials=True)
     app.config.from_object(Config)
 
