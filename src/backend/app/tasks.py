@@ -3,6 +3,7 @@ import os
 from celery import Celery
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
+from app.firebase_client import send_notification
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,8 +26,8 @@ def generate_tts_notification(text):
     # This returns a generator yielding chunks of audio data.
     audio = client.text_to_speech.convert(
         text=text,
-        voice_id="JBFqnCBsd6RMkjVDRZzb",      # Replace with your desired voice ID.
-        model_id="eleven_multilingual_v2",    # Replace with your desired model.
+        voice_id="JBFqnCBsd6RMkjVDRZzb",      # Can be replaced with any other desired voice ID.
+        model_id="eleven_multilingual_v2",    # Can be replaced with any desired model.
         output_format="mp3_44100_128",
     )
 
@@ -44,3 +45,29 @@ def generate_tts_notification(text):
 
     # Return a status message and the path to the saved audio file.
     return {"status": "complete", "audio_file": audio_path}
+
+@celery_app.task
+def send_glucose_notification(firebase_token, predicted_glucose, action):
+    """
+    Celery task that:
+    1. Sends a Firebase push notification.
+    2. Streams the speech audio directly to the client.
+    
+    :param firebase_token: User's Firebase token to receive the notification.
+    :param predicted_glucose: The predicted glucose level.
+    :param action: Recommended action for the user.
+    :return: Audio stream.
+    """
+    message = f"Predicted Glucose Level: {predicted_glucose}. {action}"
+    send_notification("Glucose Prediction Alert", message, firebase_token)
+
+    # Convert text to speech using ElevenLabs
+    audio = client.text_to_speech.convert(
+        text=message,
+        voice_id="JBFqnCBsd6RMkjVDRZzb",      # Replace with your preferred voice ID.
+        model_id="eleven_multilingual_v2",    # Replace with your preferred model.
+        output_format="mp3_44100_128",
+    )
+
+
+    return list(audio)

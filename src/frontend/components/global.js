@@ -674,6 +674,56 @@ export default css.global`
   align-items: center;
 }
 
+/* Align Edit buttons */
+.editable-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.edit-btn {
+  margin-left: 10px;
+}
+
+input.input-field {
+  margin-right: 10px;
+  width: 60%;
+}
+
+button.edit-btn {
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+button.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.diagnosis-info {
+  margin-top: 20px;
+}
+
+.logout-btn {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #e53935;
+}
+
 
 `;
 
