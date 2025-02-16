@@ -5,6 +5,7 @@ from .firebase_client import db, bucket
 from .routes import main_blueprint
 from .patients import patients_blueprint
 from .chatbot import chatbot_blueprint  # New chatbot endpoints
+from .transcription import transcription_blueprint
 
 def create_app():
     app = Flask(__name__)
@@ -18,5 +19,6 @@ def create_app():
     app.register_blueprint(main_blueprint)
     app.register_blueprint(patients_blueprint)
     app.register_blueprint(chatbot_blueprint)
+    app.register_blueprint(transcription_blueprint)
 
     return app
