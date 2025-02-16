@@ -300,6 +300,7 @@ export default function Settings() {
           {isModalOpen && (
             <div className="modal-overlay">
               <div className="modal-content">
+              <button className="close-button" onClick={handleModalClose}>X</button>
                 {error && <div className="error-box">{error}</div>}
                 <form onSubmit={(e) => e.preventDefault()} className="form">
                   <div className="diagnosis-box">

@@ -752,6 +752,25 @@ li {
   margin-bottom: 15px;
 }
 
+.close-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-button:hover {
+  background-color: #cc0000; /* Darker red for hover effect */
+}
 
 `;
 
