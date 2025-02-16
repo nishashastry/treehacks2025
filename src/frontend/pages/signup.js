@@ -10,6 +10,7 @@ export default function SignUp() {
   const [dob, setDob] = useState('');
   const [chronicDisease, setChronicDisease] = useState('');
   const [yearsSinceDiagnosed, setYearsSinceDiagnosed] = useState('');
+  const [gender, setGender] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -115,7 +116,19 @@ export default function SignUp() {
               required
             />
 
-            {/* Dropdown for Chronic Disease (Diabetes Type) */}
+            <select
+              id="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="input-field"
+              required
+            >
+              <option value="">Gender</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
+            </select>
+
             <select
               id="chronicDisease"
               value={chronicDisease}
