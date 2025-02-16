@@ -30,7 +30,7 @@ def handle_transcription():
     if file:
         # Save the file temporarily
         filename = secure_filename(file.filename)
-        file_path = os.path.join('C:\Users\jeewonj\cs\treehacks-2025\treehacks2025\src\backend\uploads', filename) 
+        file_path = os.path.join('/treehacks2025/src/backend/uploads', filename)
         file.save(file_path)
 
         try:
