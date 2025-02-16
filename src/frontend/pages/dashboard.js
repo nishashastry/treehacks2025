@@ -34,6 +34,11 @@ export default function Dashboard() {
   const firebase_token = ""
   const [showPopup, setShowPopup] = useState(true)
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPopup(true);
+    }, 5000); // Show after 5 seconds
+
+    return () => clearTimeout(timer);
     // const sendData = async () => {
     //   const response = await fetch('/predict_glucose', {
     //     method: 'POST',
