@@ -9,16 +9,41 @@ function Chatbot() {
     setMessages([{ sender: 'bot', content: 'How can I assist you today?' }]);
   }, []);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim()) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: 'user', content: newMessage },
-        { sender: 'bot', content: 'Thank you for your message! How else can I assist you?' },
-      ]);
+      const userMessage = { sender: 'user', content: newMessage };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/chat', { // Flask backend URL
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: newMessage }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: 'bot', content: data.response },
+          ]);
+        } else {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: 'bot', content: 'Error: Unable to get a response.' },
+          ]);
+        }
+      } catch (error) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: 'bot', content: 'Error: Server not reachable.' },
+        ]);
+      }
+
       setNewMessage('');
     }
   };
+
 
   return (
     <Layout>
