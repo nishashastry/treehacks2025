@@ -19,19 +19,23 @@ def handle_transcription():
     Handles the transcription of an uploaded audio file.
     Expects a multipart/form-data request with an audio file.
     """
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    # if 'file' not in request.files:
+    #     return jsonify({"error": "No file part"}), 400
 
-    file = request.files['file']
+    # file = request.files['file']
 
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+    # if file.filename == '':
+    #     return jsonify({"error": "No selected file"}), 400
+    file = request.data
+    file_path = 'uploaded_file.mp3'
+    with open(file_path, 'wb') as f:
+        f.write(file)
 
     if file:
         # Save the file temporarily
-        filename = secure_filename(file.filename)
-        file_path = os.path.join('uploads', filename)  # Ensure you have a 'uploads' directory
-        file.save(file_path)
+        # filename = secure_filename(file.filename)
+        # file_path = os.path.join('uploads', filename)  # Ensure you have a 'uploads' directory
+        # file.save(file_path)
 
         try:
             # Perform the transcription using the audio file path

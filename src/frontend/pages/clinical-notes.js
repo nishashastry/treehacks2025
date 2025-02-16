@@ -60,7 +60,7 @@ export default function ClinicalNotes() {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('audio')) {
+    if (file) {
       console.log('Uploaded file:', file.name);
 
       // Create a new FormData object to send the file as multipart/form-data
@@ -69,9 +69,16 @@ export default function ClinicalNotes() {
 
       try {
         // Send the file to the backend using a POST request
+        // const response = await fetch('http://localhost:5000/transcription', {
+        //   method: 'POST',
+        //   body: formData,
+        // });
         const response = await fetch('http://localhost:5000/transcription', {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'audio/mp3', // Or another file type like 'audio/mp3'
+          },
+          body: file,  // Directly sending the file as the request body
         });
 
         if (!response.ok) {
