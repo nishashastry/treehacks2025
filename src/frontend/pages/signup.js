@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/config';
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
 
 export default function SignUp() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [dob, setDob] = useState('');  // Date of birth
+  const [chronicDisease, setChronicDisease] = useState('');  // Chronic disease (diabetes type)
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -18,11 +20,42 @@ export default function SignUp() {
       return;
     }
 
+    setLoading(true);
+    setError('');
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/profile-input'); // Redirect to input clinical info after signup
+      // Prepare data to send to the backend
+      const userData = {
+        name,
+        email,
+        password,
+        dob,
+        chronic_disease: chronicDisease,
+      };
+
+      // Send POST request to the backend
+      const response = await fetch('/api/patients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to sign up.');
+      }
+
+      // On success, redirect to the profile input page
+      localStorage.setItem('email', email);
+      localStorage.setItem('chronicDisease', chronicDisease);
+      router.push('/profile-input');
     } catch (err) {
-      setError('Failed to sign up. Please check your credentials.');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,6 +69,14 @@ export default function SignUp() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit} className="login-form">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Full Name"
+              className="input-field"
+              required
+            />
             <input
               type="email"
               value={email}
@@ -60,8 +101,32 @@ export default function SignUp() {
               className="input-field"
               required
             />
-            <button type="submit" className="btn">
-              Sign Up
+
+            <input
+              type="date"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              placeholder="Date of Birth"
+              className="input-field"
+              required
+            />
+
+            {/* Dropdown for Chronic Disease (Diabetes Type) */}
+            <label htmlFor="chronicDisease" className="input-label">Select Chronic Disease</label>
+            <select
+              id="chronicDisease"
+              value={chronicDisease}
+              onChange={(e) => setChronicDisease(e.target.value)}
+              className="input-field"
+              required
+            >
+              <option value="">--Select Type--</option>
+              <option value="Diabetes">Diabetes</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </button>
           </form>
 
