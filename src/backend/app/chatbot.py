@@ -1,4 +1,3 @@
-# app/chatbot.py
 import os
 from flask import Blueprint, request, jsonify, session
 from openai import OpenAI
@@ -64,7 +63,7 @@ def chat():
 
         chatbot_reply = response.choices[0].message.content if response.choices else "I am sorry, I understand you need clear answers but I am currently unable to process that. You should seek professional medical advice."
         chat_history.append({"role": "assistant", "content": chatbot_reply})
-        session["chat_history"] = chat_history  # Update session history.
+        session["chat_history"] = chat_history
 
         return jsonify({"response": chatbot_reply})
     except Exception as e:

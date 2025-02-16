@@ -20,7 +20,6 @@ def register_patient():
       - chronic_disease: For this app, must be "Diabetes".
     Optional fields:
       - gender: Defaults to "Not Specified" if missing.
-      - diabetes_type: Defaults to "Not Provided" if missing.
       - years_since_diagnosis: Defaults to 0 if missing or invalid.
     """
     data = request.get_json()
@@ -53,7 +52,6 @@ def register_patient():
 
     # Set optional fields with defaults.
     gender = data.get("gender", "Not Specified")
-    diabetes_type = data.get("diabetes_type", "Not Provided")
     try:
         years_since_diagnosis = int(data.get("years_since_diagnosis", 0))
     except ValueError:
@@ -68,7 +66,6 @@ def register_patient():
         "dob": data["dob"],
         "gender": gender,
         "chronic_disease": data["chronic_disease"],
-        "diabetes_type": diabetes_type,
         "years_since_diagnosis": years_since_diagnosis,
         "created_at": datetime.utcnow().isoformat()
     }
@@ -106,3 +103,40 @@ def login_patient():
 
     # In a full production system, you would generate a session token or JWT here.
     return jsonify({"message": "Login successful.", "patient_id": patient_data["patient_id"]}), 200
+
+
+@patients_blueprint.route('/patient/profile', methods=['GET'])
+def get_profile():
+    """
+    Fetches the profile information of the currently authenticated user.
+    Expects an ID token in the Authorization header.
+    """
+    try:
+        # Get the user's email from the query parameters
+        email = request.args.get('email')
+
+        if not email:
+            return jsonify({"error": "Email parameter is required."}), 400
+
+        # Query Firestore to find the user document by email
+        users_ref = firestore.client().collection('users')
+        query = users_ref.where('email', '==', email).limit(1).get()
+
+        if not query:
+            return jsonify({"error": "User profile not found."}), 404
+
+        user_data = query[0].to_dict()
+
+        # Return the user profile data as a JSON response
+        return jsonify({
+            "user_id": user_data.get("user_id"),
+            "name": user_data.get("name"),
+            "email": user_data.get("email"),
+            "gender": user_data.get("gender", "Not Specified"),
+            "chronic_disease": user_data.get("chronic_disease", "Diabetes"),
+            "years_since_diagnosis": user_data.get("years_since_diagnosis", 0),
+            "diagnosis": user_data.get("diagnosis", []),
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Error fetching profile: {str(e)}"}), 500
