@@ -57,13 +57,41 @@ export default function ClinicalNotes() {
     }
   }, [isRecording]);
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file && file.type === 'audio/mpeg') {
+    if (file && file.type.startsWith('audio')) {
       console.log('Uploaded file:', file.name);
-      // You can handle file reading or audio processing here
+
+      // Create a new FormData object to send the file as multipart/form-data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        // Send the file to the backend using a POST request
+        const response = await fetch('http://localhost:5000/transcription', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Error:', errorData.error);
+          alert('Error processing the file.');
+          return;
+        }
+
+        const responseData = await response.json();
+        console.log('Transcription and action items:', responseData);
+
+        // Use the transcription and action items returned from the backend
+        setTranscript(responseData.transcription);
+        setSuggestedQuestions(responseData.action_items);
+      } catch (error) {
+        console.error('Error sending the file:', error);
+        alert('Failed to upload the file.');
+      }
     } else {
-      alert('Please upload a valid MP3 file.');
+      alert('Please upload a valid audio file.');
     }
   };
 
@@ -82,7 +110,7 @@ export default function ClinicalNotes() {
             Upload Audio File
             <input 
               type="file" 
-              accept="audio/mp3" 
+              accept="audio/*"  // Accept all audio types (you can also specify formats like 'audio/mp3' if preferred)
               onChange={handleFileUpload} 
               style={{ display: 'none' }} 
             />

@@ -1,13 +1,57 @@
-# app/transcription.py
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
 
 load_dotenv()  # Make sure OPENAI_API_KEY is loaded
 
 # Set the API key for OpenAI
 openai_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_key)
+
+# Create blueprint for transcription
+transcription_blueprint = Blueprint('transcription', __name__)
+
+@transcription_blueprint.route('/transcription', methods=['POST'])
+def handle_transcription():
+    """
+    Handles the transcription of an uploaded audio file.
+    Expects a multipart/form-data request with an audio file.
+    """
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file:
+        # Save the file temporarily
+        filename = secure_filename(file.filename)
+        file_path = os.path.join('uploads', filename)  # Ensure you have a 'uploads' directory
+        file.save(file_path)
+
+        try:
+            # Perform the transcription using the audio file path
+            transcript = transcription(file_path)
+
+            # Generate action items based on the transcription
+            action_items_list = action_items(transcript)
+
+            # Clean up the saved file after processing (optional)
+            os.remove(file_path)
+
+            return jsonify({
+                "transcription": transcript,
+                "action_items": action_items_list
+            }), 200
+
+        except Exception as e:
+            return jsonify({"error": f"Error processing the file: {str(e)}"}), 500
+
+    return jsonify({"error": "Invalid file type. Only wav, mp3, flac, and ogg are allowed."}), 400
 
 def transcription(audio_path):
     """
