@@ -68,7 +68,7 @@ export default function ClinicalNotes() {
       formData.append('file', file);
 
       try {
-        Send the file to the backend using a POST request
+        // Send the file to the backend using a POST request
         const response = await fetch('http://localhost:5000/transcription', {
           method: 'POST',
           body: formData,
