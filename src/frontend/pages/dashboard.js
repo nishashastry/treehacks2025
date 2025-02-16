@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
+"use client"; // Ensure this is at the very top
 
+import { useState, useEffect } from "react";
 // Function to generate random diagnoses
 const generateDiagnoses = () => {
   const diagnoses = [
