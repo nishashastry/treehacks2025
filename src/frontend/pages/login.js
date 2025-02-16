@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/config';
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
 
@@ -13,10 +11,25 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard'); // Redirect to dashboard after login
+      // Send login request to the backend
+      const response = await fetch('/api/patients/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      // Handle successful response
+      if (response.ok) {
+        const data = await response.json();
+        router.push('/dashboard'); // Redirect to dashboard on successful login
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Something went wrong. Please try again.');
+      }
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError('An error occurred. Please try again.');
     }
   };
 
