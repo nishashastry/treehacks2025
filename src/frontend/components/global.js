@@ -68,7 +68,7 @@ export default css.global`
   .chat-page, .dashboard-page, .conversations-page, .settings-page {
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    min-height: 90vh;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
   }
@@ -646,6 +646,32 @@ export default css.global`
 .primary-button {
   background-color: #007bff;
   color: white;
+}
+
+.columns-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px; /* Spacing between columns */
+  margin-top: 20px;
+  min-height: 70vh;
+}
+
+.column {
+  flex: 1;
+  min-width: 280px;
+  max-width: 33%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.column .section-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  align-items: center;
 }
 
 

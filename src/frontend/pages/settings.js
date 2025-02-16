@@ -17,37 +17,73 @@ export default function Settings() {
   const [fieldsValue, setFieldsValue] = useState({
     email: '',
   });
+  const [profileData, setProfileData] = useState({
+    email: '',
+    name: '',
+    gender: 'Not Specified',
+    chronic_disease: 'Diabetes',
+    years_since_diagnosis: 0,
+    diagnosis: [],
+  });
+
 
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
-        console.log('Auth state changed. User:', currentUser.uid);
         setUser(currentUser);
-  
-        // Fetch user data
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          console.log('User document:', userDoc.data());
-          setDiagnosis(userDoc.data().diagnosis || []);
-          setFieldsValue({ email: currentUser.email });
-        } else {
-          console.log('No user document found in Firestore');
+
+        // Fetch user profile data by email from your server
+        try {
+          const response = await fetch(`http://localhost:5000/patients/profile?email=${currentUser.email}`);
+          const data = await response.json();
+
+          if (response.ok) {
+            setProfileData({
+              email: currentUser.email,
+              name: data.name,
+              gender: data.gender,
+              chronic_disease: data.chronic_disease,
+              years_since_diagnosis: data.years_since_diagnosis,
+              diagnosis: data.diagnosis || [],
+            });
+
+            setFieldsValue({
+              email: currentUser.email,
+              name: data.name,
+              gender: data.gender,
+              years_since_diagnosis: data.years_since_diagnosis,
+            });
+          } else {
+            console.error('Error fetching profile:', data.error);
+            setError(data.error);
+          }
+        } catch (error) {
+          console.error('Error fetching profile data from server:', error);
+          setError('Failed to load profile data.');
         }
       } else {
-        console.log('User is logged out.');
         setUser(null);
-        setDiagnosis([]);
-        setFieldsValue({ email: '' });
-        router.push('/');
+        setProfileData({
+          email: '',
+          name: '',
+          gender: 'Not Specified',
+          chronic_disease: 'Diabetes',
+          years_since_diagnosis: 0,
+          diagnosis: [],
+        });
+        setFieldsValue({
+          email: '',
+          name: '',
+          gender: 'Not Specified',
+          years_since_diagnosis: 0,
+        });
       }
     });
-  
+
     return () => unsubscribe();
   }, []);
-  
 
 
   const handleEditClick = (field) => {
@@ -56,6 +92,17 @@ export default function Settings() {
 
   const handleChange = (e, field) => {
     setFieldsValue((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      // Redirect to the login page or landing page after successful sign out
+      router.push('/login');  // Replace '/login' with your desired redirect URL
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      alert('An error occurred while signing out. Please try again.');
+    }
   };
 
   const handleSave = async () => {
@@ -176,23 +223,59 @@ export default function Settings() {
       <div className="settings-page">
         <div className="settings-container">
           <h2 className="settings-title">Profile Settings</h2>
-          <div className="profile-info">
-            <strong>Email: </strong>
-            {editableFields.email ? (
+            <div className="profile-info">
+              <strong>Email: </strong>
+              <span>{fieldsValue.email}</span>
+            </div>
+
+            <div className="profile-info">
+              <strong>Name: </strong>
+              {editableFields.name ? (
                 <input
-                  type="email"
-                  value={fieldsValue.email}
+                  type="text"
+                  value={fieldsValue.name}
                   className="input-field"
-                  onChange={(e) => handleChange(e, 'email')}
+                  onChange={(e) => handleChange(e, 'name')}
                 />
               ) : (
-                <span>{fieldsValue.email}</span>
+                <span>{fieldsValue.name}</span>
               )}
-              <button
-                className="edit-btn"
-                onClick={() => handleEditClick('email')}
-              >
-                {editableFields.email ? 'Save' : 'Edit'}
+              <button className="edit-btn" onClick={() => handleEditClick('name')}>
+                {editableFields.name ? 'Save' : 'Edit'}
+              </button>
+            </div>
+
+            <div className="profile-info">
+              <strong>Gender: </strong>
+              {editableFields.gender ? (
+                <input
+                  type="text"
+                  value={fieldsValue.gender}
+                  className="input-field"
+                  onChange={(e) => handleChange(e, 'gender')}
+                />
+              ) : (
+                <span>{fieldsValue.gender}</span>
+              )}
+              <button className="edit-btn" onClick={() => handleEditClick('gender')}>
+                {editableFields.gender ? 'Save' : 'Edit'}
+              </button>
+            </div>
+
+            <div className="profile-info">
+              <strong>Years Since Diagnosis: </strong>
+              {editableFields.years_since_diagnosis ? (
+                <input
+                  type="number"
+                  value={fieldsValue.years_since_diagnosis}
+                  className="input-field"
+                  onChange={(e) => handleChange(e, 'years_since_diagnosis')}
+                />
+              ) : (
+                <span>{fieldsValue.years_since_diagnosis}</span>
+              )}
+              <button className="edit-btn" onClick={() => handleEditClick('years_since_diagnosis')}>
+                {editableFields.years_since_diagnosis ? 'Save' : 'Edit'}
               </button>
             </div>
 
@@ -274,7 +357,7 @@ export default function Settings() {
             </div>
           )}
 
-          <button className="logout-btn" onClick={() => auth.signOut()}>
+          <button className="logout-btn" onClick={handleLogout}>
             Log Out
           </button>
         </div>

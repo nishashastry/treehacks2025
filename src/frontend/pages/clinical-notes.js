@@ -103,7 +103,6 @@ export default function ClinicalNotes() {
     // Split the input into Summary and Action Items sections
     const sections = actionItems.split("*** Action Items ***");
     const summary = sections[0]?.trim();
-    summary = summary.replace("***Summary***", "").trim(); 
     const actionItemsList = sections[1]?.trim();
     return { summary, actionItemsList };
   };
@@ -131,24 +130,23 @@ export default function ClinicalNotes() {
         </div>
 
         <div className="content-container">
-          <div className="messages">
-            <h2 className="section-title">Live Transcript</h2>
-            <div>{transcript || 'Start recording to generate transcript'}</div>
-          </div>
 
-          <div className="messages">
-            <h2 className="section-title">Summary</h2>
-            <div>{summary || 'Summary of conversation'}</div>
-          </div>
+          {/* Flex container to display sections horizontally */}
+          <div className="columns-container">
+            <div className="column">
+              <h2 className="section-title">Summary</h2>
+              <div>{summary}</div>
+            </div>
 
-          <div className="messages">
-            <h2 className="section-title">Action Items</h2>
-            <div>{actionItems || 'Action items assigned by doctor'}</div>
-          </div>
+            <div className="column">
+              <h2 className="section-title">Action Items</h2>
+              <div>{actionItems}</div>
+            </div>
 
-          <div className="suggested-questions">
-            <h2 className="section-title">Suggested Questions</h2>
-            <div>{suggestedQuestions}</div>
+            <div className="column">
+              <h2 className="section-title">Suggested Questions</h2>
+              <div>{suggestedQuestions.length > 0 ? suggestedQuestions.join('\n') : suggestedQuestions}</div>
+            </div>
           </div>
         </div>
       </div>

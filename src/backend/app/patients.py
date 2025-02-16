@@ -103,3 +103,40 @@ def login_patient():
 
     # In a full production system, you would generate a session token or JWT here.
     return jsonify({"message": "Login successful.", "patient_id": patient_data["patient_id"]}), 200
+
+
+@patients_blueprint.route('/patient/profile', methods=['GET'])
+def get_profile():
+    """
+    Fetches the profile information of the currently authenticated user.
+    Expects an ID token in the Authorization header.
+    """
+    try:
+        # Get the user's email from the query parameters
+        email = request.args.get('email')
+
+        if not email:
+            return jsonify({"error": "Email parameter is required."}), 400
+
+        # Query Firestore to find the user document by email
+        users_ref = firestore.client().collection('users')
+        query = users_ref.where('email', '==', email).limit(1).get()
+
+        if not query:
+            return jsonify({"error": "User profile not found."}), 404
+
+        user_data = query[0].to_dict()
+
+        # Return the user profile data as a JSON response
+        return jsonify({
+            "user_id": user_data.get("user_id"),
+            "name": user_data.get("name"),
+            "email": user_data.get("email"),
+            "gender": user_data.get("gender", "Not Specified"),
+            "chronic_disease": user_data.get("chronic_disease", "Diabetes"),
+            "years_since_diagnosis": user_data.get("years_since_diagnosis", 0),
+            "diagnosis": user_data.get("diagnosis", []),
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Error fetching profile: {str(e)}"}), 500
