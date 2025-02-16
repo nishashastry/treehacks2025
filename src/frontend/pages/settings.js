@@ -26,7 +26,6 @@ export default function Settings() {
     diagnosis: [],
   });
 
-
   const router = useRouter();
 
   useEffect(() => {
@@ -97,8 +96,7 @@ export default function Settings() {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      // Redirect to the login page or landing page after successful sign out
-      router.push('/login');  // Replace '/login' with your desired redirect URL
+      router.push('/login');
     } catch (error) {
       console.error('Error signing out: ', error);
       alert('An error occurred while signing out. Please try again.');
@@ -107,10 +105,9 @@ export default function Settings() {
 
   const handleSave = async () => {
     try {
-      const user = auth.currentUser; // Get the current user
+      const user = auth.currentUser;
 
       if (editableFields.email) {
-        // Update email in Firebase if the email field is being edited
         await updateEmail(user, fieldsValue.email);
       }
 
@@ -119,14 +116,12 @@ export default function Settings() {
       });
 
       setFieldsValue({
-        email: user.email, // Firebase automatically updates the email in the user object
+        email: user.email,
       });
 
-      // You can display a success message or notify the user
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile: ', error);
-      // Handle any errors that occur during the update process
       alert('Failed to update profile. Please try again.');
     }
   };
@@ -141,7 +136,6 @@ export default function Settings() {
     setNewDiagnosis({ name: '', date: '', details: '' });
     setError('');
 
-    // Reload diagnoses from Firestore
     try {
       const user = auth.currentUser;
       if (user) {
@@ -165,25 +159,24 @@ export default function Settings() {
     try {
       const user = auth.currentUser;
       if (!user) throw new Error('No user logged in');
-  
+
       const userRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userRef);
-  
+
       if (!userDoc.exists()) {
         console.log('User document does not exist. Creating one...');
         await setDoc(userRef, { diagnosis: [], updatedAt: new Date() });
       }
-  
+
       console.log('Adding new diagnosis:', newDiagnosis);
-  
+
       await updateDoc(userRef, {
         diagnosis: arrayUnion(newDiagnosis),
         updatedAt: new Date(),
       });
-  
+
       console.log('Diagnosis added successfully.');
-  
-      // Fetch updated diagnosis list
+
       const updatedUserDoc = await getDoc(userRef);
       setDiagnosis(updatedUserDoc.data().diagnosis || []);
     } catch (error) {
@@ -191,45 +184,44 @@ export default function Settings() {
       setError('Failed to save diagnosis. ' + error.message);
     }
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const user = auth.currentUser;
       if (!user) throw new Error('No user logged in');
-  
+
       const userRef = doc(db, 'users', user.uid);
-  
+
       await setDoc(userRef, { diagnosis }, { merge: true });
-  
+
       console.log('All diagnoses saved:', diagnosis);
-  
-      // Refresh diagnosis list
+
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         setDiagnosis(userDoc.data().diagnosis || []);
       }
-  
+
       handleModalClose();
     } catch (error) {
       setError('Failed to save diagnoses. ' + error.message);
     }
   };
-  
 
   return (
     <Layout>
       <div className="settings-page">
         <div className="settings-container">
           <h2 className="settings-title">Profile Settings</h2>
-            <div className="profile-info">
-              <strong>Email: </strong>
-              <span>{fieldsValue.email}</span>
-            </div>
 
-            <div className="profile-info">
-              <strong>Name: </strong>
+          <div className="profile-info">
+            <strong>Email: </strong>
+            <span>{fieldsValue.email}</span>
+          </div>
+
+          <div className="profile-info">
+            <strong>Name: </strong>
+            <div className="editable-field">
               {editableFields.name ? (
                 <input
                   type="text"
@@ -244,9 +236,11 @@ export default function Settings() {
                 {editableFields.name ? 'Save' : 'Edit'}
               </button>
             </div>
+          </div>
 
-            <div className="profile-info">
-              <strong>Gender: </strong>
+          <div className="profile-info">
+            <strong>Gender: </strong>
+            <div className="editable-field">
               {editableFields.gender ? (
                 <input
                   type="text"
@@ -261,9 +255,11 @@ export default function Settings() {
                 {editableFields.gender ? 'Save' : 'Edit'}
               </button>
             </div>
+          </div>
 
-            <div className="profile-info">
-              <strong>Years Since Diagnosis: </strong>
+          <div className="profile-info">
+            <strong>Years Since Diagnosis: </strong>
+            <div className="editable-field">
               {editableFields.years_since_diagnosis ? (
                 <input
                   type="number"
@@ -278,6 +274,7 @@ export default function Settings() {
                 {editableFields.years_since_diagnosis ? 'Save' : 'Edit'}
               </button>
             </div>
+          </div>
 
           <div className="diagnosis-info">
             <h3>Diagnoses</h3>

@@ -724,6 +724,34 @@ button.edit-btn:hover {
   background-color: #e53935;
 }
 
+.dashboard-content {
+  display: flex;
+  gap: 20px;
+}
+
+.dashboard-box {
+  flex: 1;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-right: 40px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 15px;
+}
+
 
 `;
 

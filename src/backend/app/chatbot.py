@@ -4,7 +4,6 @@ from openai import OpenAI
 from flask_cors import CORS
 
 chatbot_blueprint = Blueprint('chatbot', __name__)
-# Optionally, apply CORS to this blueprint if needed.
 
 # Create a Perplexity client using the custom base URL and API key.
 perplexity_api_key = os.getenv("PERPLEXITY_API_KEY")

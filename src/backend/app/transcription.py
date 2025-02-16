@@ -37,6 +37,8 @@ def handle_transcription():
             # Perform the transcription using the audio file path
             transcript = transcription(file_path)
 
+            summary = get_summary(transcript)
+
             # Generate action items based on the transcription
             action_items_list = action_items(transcript)
 
@@ -48,6 +50,7 @@ def handle_transcription():
 
             return jsonify({
                 "transcription": transcript,
+                "summary": summary,
                 "action_items": action_items_list,
                 "suggested_questions": suggested_questions_list
             }), 200
@@ -56,7 +59,6 @@ def handle_transcription():
             return jsonify({"error": f"Error processing the file: {str(e)}"}), 500
 
     return jsonify({"error": "Invalid file type. Only wav, mp3, flac, and ogg are allowed."}), 400
-
 
 def transcription(audio_path):
     """
@@ -74,6 +76,23 @@ def transcription(audio_path):
     return transcription_response.text
 
 
+def get_summary(transcript):
+    prompt = (
+        "You are going to get an audio transcript of a doctor's visit for diabetes. "
+        "In the audio transcript, there is audio of both the doctor and patient. "
+        "You are basically a medically educated scribe assistant for the doctor. "
+        "The patient wants a summary of the conversation."
+    )
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "developer", "content": prompt},
+            {"role": "user", "content": "Summary of this doctor patient conversation" + str(transcript)}
+        ]
+    )
+    return completion.choices[0].message.content
+
+
 def action_items(transcript):
     """
     Generate a summary and a list of action items for a doctor's visit transcript.
@@ -85,7 +104,7 @@ def action_items(transcript):
         "You are going to get an audio transcript of a doctor's visit for diabetes. "
         "In the audio transcript, there is audio of both the doctor and patient. "
         "You are basically a medically educated scribe assistant for the doctor. "
-        "The patient wants a summary and a list of action items based on the doctor's visits."
+        "The patient wants a list of action items based on the doctor's visits."
     )
     completion = client.chat.completions.create(
         model="gpt-4o",

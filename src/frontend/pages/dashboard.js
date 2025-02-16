@@ -34,8 +34,8 @@ export default function Dashboard() {
       <div className="dashboard-page">
         <div className="dashboard-container">
           <h1 className="page-title">Health Dashboard</h1>
-          <div className="dashboard-content">
-            <div className="dashboard-box">
+          <div className="dashboard-content" style={{ display: 'flex', gap: '20px' }}>
+            <div className="dashboard-box" style={{ flex: 1 }}>
               <h2 className="section-title">Recent Diagnoses</h2>
               <ul>
                 {diagnoses.map((item, index) => (
@@ -47,7 +47,7 @@ export default function Dashboard() {
                 ))}
               </ul>
             </div>
-            <div className="dashboard-box">
+            <div className="dashboard-box" style={{ flex: 1 }}>
               <h2 className="section-title">Upcoming Medications</h2>
               <ul>
                 {medications.map((med, index) => (
