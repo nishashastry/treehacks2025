@@ -7,8 +7,9 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [dob, setDob] = useState('');  // Date of birth
-  const [chronicDisease, setChronicDisease] = useState('');  // Chronic disease (diabetes type)
+  const [dob, setDob] = useState('');
+  const [chronicDisease, setChronicDisease] = useState('');
+  const [yearsSinceDiagnosed, setYearsSinceDiagnosed] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function SignUp() {
         password,
         dob,
         chronic_disease: chronicDisease,
+        years_since_diagnosed: yearsSinceDiagnosed,
       };
 
       // Send POST request to the backend
@@ -112,7 +114,6 @@ export default function SignUp() {
             />
 
             {/* Dropdown for Chronic Disease (Diabetes Type) */}
-            <label htmlFor="chronicDisease" className="input-label">Select Chronic Disease</label>
             <select
               id="chronicDisease"
               value={chronicDisease}
@@ -120,10 +121,19 @@ export default function SignUp() {
               className="input-field"
               required
             >
-              <option value="">--Select Type--</option>
+              <option value="">Select Chronic Disease</option>
               <option value="Diabetes">Diabetes</option>
               <option value="Other">Other</option>
             </select>
+
+            <input
+              type="number"
+              value={yearsSinceDiagnosed}
+              onChange={(e) => setYearsSinceDiagnosed(e.target.value)}
+              placeholder="Years Since Diagnosed"
+              className="input-field"
+              required
+            />
 
             <button type="submit" className="btn" disabled={loading}>
               {loading ? 'Signing Up...' : 'Sign Up'}
