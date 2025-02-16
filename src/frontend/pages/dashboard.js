@@ -34,12 +34,19 @@ export default function Dashboard() {
   const readings = ""
   const firebase_token = ""
   const [showPopup, setShowPopup] = useState(false)
+  const [action, setAction] = useState(null);
   useEffect(() => {
+    fetch("/predict_glucose")
+    .then((res) => res.json()) // Convert response to JSON
+    .then((data) => setAction(data.action)) // Extract "action"
+    .catch((error) => console.error("Error:", error));
+
     const timer = setTimeout(() => {
       setShowPopup(true);
     }, 5000); // Show after 5 seconds
 
     return () => clearTimeout(timer);
+    
     // const sendData = async () => {
     //   const response = await fetch('/predict_glucose', {
     //     method: 'POST',
@@ -97,8 +104,7 @@ export default function Dashboard() {
        {showPopup && (
         <div className="popup-overlay">
           <div className="popup">
-            <h2>High glucose alert!</h2>
-            <p>Consider insulin intake or consulting a doctor.</p>
+            <h2>{action}</h2>
             <button onClick={() => setShowPopup(false)}>Close</button>
           </div>
         </div>

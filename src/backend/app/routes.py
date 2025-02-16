@@ -160,25 +160,27 @@ def predict_glucose():
     Expects a JSON payload with a 'readings' key containing a list of glucose readings and optional firebase
     token.
     """
-    data = request.get_json()
-    readings = data.get('readings', [])
-    firebase_token = data.get("firebase_token") # For Push Notification
+    # data = request.get_json()
+    # readings = data.get('readings', [])
+    # firebase_token = data.get("firebase_token") # For Push Notification
 
-    if not readings:
-        return jsonify({"error": "No glucose readings provided."}), 400
+    # if not readings:
+    #     return jsonify({"error": "No glucose readings provided."}), 400
 
     predictor = GlucosePredictor()
-    prediction = predictor.predict_next_2h(readings)
-    action = predictor.generate_action_suggestion(prediction)
+    prediction = predictor.predict_next_2h()
+    #predictor.generate_action_suggestion(prediction)
 
-    def generate_audio():
-        for chunk in task.get():
-            yield chunk
+    # def generate_audio():
+    #     for chunk in task.get():
+    #         yield chunk
 
-    if firebase_token:
-        task = send_glucose_notification.delay(prediction, action)
+    # if firebase_token:
+    #     task = send_glucose_notification.delay(prediction, action)
 
-        # Send a notification with the prediction and action suggestion.
-        task = send_glucose_notification.delay(firebase_token, prediction["predicted_glucose"], prediction["action"])
+    #     # Send a notification with the prediction and action suggestion.
+    #     task = send_glucose_notification.delay(firebase_token, prediction["predicted_glucose"], prediction["action"])
     
-    return Response(stream_with_context(generate_audio()), content_type="audio/mpeg")
+    return jsonify({
+        "action" : prediction.action
+        }), 202 #Response(stream_with_context(generate_audio()), content_type="audio/mpeg")
