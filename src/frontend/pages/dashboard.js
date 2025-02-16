@@ -28,6 +28,29 @@ export default function Dashboard() {
   const router = useRouter();
   const diagnoses = generateDiagnoses();
   const medications = generateMedications();
+  const readings = ""
+  const firebase_token = ""
+  const [showPopup, setShowPopup] = useState(true)
+  useEffect(() => {
+    // const sendData = async () => {
+    //   const response = await fetch('/predict_glucose', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       firebase_token: "12345",  // Optional, if you want to send notifications
+    //     }),
+    //   });
+  
+    //   // Create an audio element to play the response
+    //   const audio = new Audio();
+    //   audio.src = URL.createObjectURL(await response.blob());
+    //   audio.play();
+    // };
+  
+    sendData();
+  }, []);
 
   return (
     <Layout>
@@ -62,6 +85,53 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+       {/* Pop-up Modal */}
+       {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h2>Welcome to your Health Dashboard</h2>
+            <p>Stay updated with your latest diagnoses and medication schedule.</p>
+            <button onClick={() => setShowPopup(false)}>Close</button>
+          </div>
+        </div>
+      )}
+      {/* Styles for modal */}
+      <style jsx>{`
+        .popup-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .popup {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+          text-align: center;
+        }
+
+        .popup button {
+          margin-top: 10px;
+          padding: 5px 10px;
+          border: none;
+          background: #007bff;
+          color: white;
+          cursor: pointer;
+          border-radius: 5px;
+        }
+
+        .popup button:hover {
+          background: #0056b3;
+        }
+      `}</style>
     </Layout>
   );
 }
