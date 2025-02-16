@@ -1,6 +1,7 @@
+"use client"; // Ensure this is at the very top
+
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
-"use client"; // Ensure this is at the very top
 
 import { useState, useEffect } from "react";
 // Function to generate random diagnoses
@@ -32,7 +33,7 @@ export default function Dashboard() {
   const medications = generateMedications();
   const readings = ""
   const firebase_token = ""
-  const [showPopup, setShowPopup] = useState(true)
+  const [showPopup, setShowPopup] = useState(false)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowPopup(true);
