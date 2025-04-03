@@ -1,4 +1,4 @@
-# Health Companion Assistant 🤝
+# MedMentor 🤝
 ## Overview
 This project is a Health Companion Assistant built for TreeHacks 🌳💡. Our goal is to empower patients during and after their consultations by providing an intelligent companion that records, transcribes, and summarizes their doctor visits. In its beta development phase, the app focuses on diabetes 🍬, while future iterations will expand support to broader chronic disease management and personalized symptom tracking.
 
